@@ -1,13 +1,11 @@
 "use server";
 
-export async function Search(prevState: any, formData: FormData) {
-  const data = {
-    q: formData.get("search"),
-  };
-  if (data.q) {
-    return getVideos(data.q);
+export async function search(prevState: any, formData: FormData) {
+  const query = formData.get("search");
+  if (query) {
+    return getVideos(query);
   }
-  return {};
+  return [];
 }
 
 export async function getVideos(q: FormDataEntryValue) {

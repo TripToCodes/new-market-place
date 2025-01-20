@@ -3,8 +3,8 @@ import VideoList from "@/components/video-list";
 import FormInput from "@/components/form-input";
 import FormButton from "@/components/form-button";
 import { useFormState } from "react-dom";
-import { getVideos, Search } from "./action";
-import { useState, useRef } from "react";
+import { search } from "./action";
+import { useState, useRef, useEffect } from "react";
 
 export type Video = {
   id: { videoId: string };
@@ -12,40 +12,27 @@ export type Video = {
 };
 
 export default function Page() {
-  const [state, dispatch] = useFormState(Search, null);
+  const [state, dispatch] = useFormState(search, []);
   const [videos, setVideos] = useState<Video[]>([]);
-  const [search, setSearch] = useState<string>("");
   const debounceTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
-  const handleSearch = (event: React.FormEvent) => {
-    event.preventDefault();
-
+  useEffect(() => {
     if (debounceTimeoutRef.current) {
       clearTimeout(debounceTimeoutRef.current);
     }
 
-    debounceTimeoutRef.current = setTimeout(async () => {
-      if (search) {
-        const videosData = await getVideos(search);
-        setVideos(videosData);
-      } else {
-        setVideos([]);
-      }
+    debounceTimeoutRef.current = setTimeout(() => {
+      if (state && Array.isArray(state)) {
+        setVideos(state);
+      } else return;
     }, 300);
-  };
+  }, [state]);
 
   return (
     <div>
       <div>
-        <form onSubmit={handleSearch} className="flex flex-col gap-3">
-          <FormInput
-            name="search"
-            type="search"
-            placeholder="Search here..."
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            required={false}
-          />
+        <form action={dispatch} className="flex flex-col gap-3">
+          <FormInput name="search" type="search" placeholder="Search here..." required={false} />
           <FormButton text="Search" />
         </form>
       </div>
